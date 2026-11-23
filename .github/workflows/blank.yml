@@ -1,0 +1,43 @@
+
+name: Fast Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --build-cache
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: APK-BUILD
+          path: |
+            app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 3
+
+      
